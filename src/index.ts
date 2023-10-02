@@ -12,6 +12,8 @@ import { ChatEvent } from './messages/event';
 
 const port = 8080;
 
+app.use(express.static('public'));
+
 let users: User[] = [];
 
 function greetUser(socket: Socket) {

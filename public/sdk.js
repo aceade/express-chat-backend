@@ -1,8 +1,25 @@
 import { io } from "socket.io-client";
+
 let socket = undefined;
 
-export const startChat = () => {
+/**
+ * Start the chat
+ * @param {object} notificationMethods 
+ */
+export const startChat = (notificationMethods) => {
+    const newChatMessageListener = notificationMethods.newChatMessageListener;
+    const typingListener = notificationMethods.typingListener;
+    const usersListener = notificationMethods.usersListener;
+    const newChatListener = notificationMethods.newChatListener;
     socket = io();
+    socket.on("chatMessage", newChatMessageListener);
+    socket.on("typing", typingListener);
+    socket.on("userList", usersListener);
+    socket.on("greeting", newChatListener);
+}
+
+export const closeChat = () => {
+    io.close();
 }
 
 /**

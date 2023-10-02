@@ -19,7 +19,6 @@ function greetUser(socket: Socket) {
         message: "Hi!",
         id: socket.id
     }
-    socket.emit("greeting", message);
     sendMessage(socket, "greeting", message);
 }
 

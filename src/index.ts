@@ -8,6 +8,7 @@ const io = new Server(server);
 import { User } from './users/user';
 import { isValid } from './messages/validator';
 import { ChatMessage, Greeting, UserStatusMessage, UserStatus, BaseMessage, TypingMessage } from './messages/message';
+import { ChatEvent } from './messages/event';
 
 const port = 8080;
 
@@ -19,11 +20,11 @@ function greetUser(socket: Socket) {
         message: "Hi!",
         id: socket.id
     }
-    sendMessage(socket, "greeting", message);
+    sendMessage(socket, ChatEvent.greeting, message);
 }
 
-function sendMessage(socket: Socket, event: string, message: BaseMessage) {
-    socket.emit(event, message);
+function sendMessage(socket: Socket, event: ChatEvent, message: BaseMessage) {
+    socket.emit(event.toString(), message);
 }
 
 /**
@@ -32,8 +33,8 @@ function sendMessage(socket: Socket, event: string, message: BaseMessage) {
  * @param event defines the event ('typing', 'chat message, etc)
  * @param message the message to send
  */
-function broadcastToOthers(socket: Socket, event: string, message: BaseMessage) {
-    socket.broadcast.emit(event, message);
+function broadcastToOthers(socket: Socket, event: ChatEvent, message: BaseMessage) {
+    socket.broadcast.emit(event.toString(), message);
 }
 
 /**
@@ -41,14 +42,14 @@ function broadcastToOthers(socket: Socket, event: string, message: BaseMessage) 
  * @param event defines the event used (e.g. 'user list')
  * @param message the message to use
  */
-function broadcastToEveryone(event: string, message: BaseMessage) {
-    io.emit(event, message);
+function broadcastToEveryone(event: ChatEvent, message: BaseMessage) {
+    io.emit(event.toString(), message);
 }
 
-io.on('connection', (socket) => {
+io.on(ChatEvent.connection.toString(), (socket) => {
     console.log('a user connected');
     greetUser(socket);
-    socket.on('disconnect', () => {
+    socket.on(ChatEvent.disconnection.toString(), () => {
         let oldUser = users.filter(x => x.id === socket.id);
         users = users.filter(x => x.id !== socket.id);
         let message: UserStatusMessage = {
@@ -56,33 +57,33 @@ io.on('connection', (socket) => {
             sender: oldUser[0].name,
             status: UserStatus.disconnecting
         };
-        broadcastToEveryone("user list", message);
+        broadcastToEveryone(ChatEvent.chatMessage, message);
     });
 
-    socket.on('chat message', (msg: ChatMessage) => {
+    socket.on(ChatEvent.chatMessage.toString(), (msg: ChatMessage) => {
         if (isValid(msg)) {
             // no need to send this back to ourselves
-            broadcastToOthers(socket, "chat message", msg);
+            broadcastToOthers(socket, ChatEvent.chatMessage, msg);
         } else {
             // let the user know they're being very naughty
             let warning: ChatMessage = {
                 sender: "Server",
                 message: `Tut tut, ${msg.sender}`
             }
-            sendMessage(socket, "chat message", warning);
+            sendMessage(socket, ChatEvent.chatMessage, warning);
         }
     });
 
-    socket.on("typing", (msg: BaseMessage) => {
+    socket.on(ChatEvent.typing.toString(), (msg: BaseMessage) => {
         let isTypingMessage: TypingMessage = {
             id: socket.id,
             sender: msg.sender
         }
         // send to everyone but the original sender
-        broadcastToOthers(socket, "typing", isTypingMessage);
+        broadcastToOthers(socket, ChatEvent.typing, isTypingMessage);
     });
 
-    socket.on("new user", (msg) => {
+    socket.on(ChatEvent.newUser.toString(), (msg: BaseMessage) => {
         console.info("New user joined:", msg)
         users.push({
             name: msg.sender,
@@ -95,7 +96,7 @@ io.on('connection', (socket) => {
             sender: msg.sender,
             status: UserStatus.joining
         };
-        broadcastToEveryone("user list", message);
+        broadcastToEveryone(ChatEvent.userList, message);
     });
 });
 

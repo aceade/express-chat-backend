@@ -17,8 +17,8 @@ export interface Greeting extends ChatMessage {
     id: string;
 }
 
-export interface TypingMessage {
-    sender: string;
+export interface TypingMessage extends BaseMessage {
+    id: string
 }
 
 export interface UserStatusMessage extends BaseMessage {

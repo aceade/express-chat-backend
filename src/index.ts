@@ -7,7 +7,7 @@ const io = new Server(server);
 
 import { User } from './users/user';
 import { isValid } from './messages/validator';
-import { ChatMessage, Greeting, UserStatusMessage, UserStatus, BaseMessage } from './messages/message';
+import { ChatMessage, Greeting, UserStatusMessage, UserStatus, BaseMessage, TypingMessage } from './messages/message';
 
 const port = 8080;
 
@@ -28,9 +28,9 @@ function sendMessage(socket: Socket, event: string, message: BaseMessage) {
 }
 
 /**
- * Send to everyone in the room except the original sender
+ * Send to everyone in the room except the original sender.
  * @param socket the Socket used
- * @param event defines the event ('user list', 'greeting', etc)
+ * @param event defines the event ('typing', 'chat message, etc)
  * @param message the message to send
  */
 function broadcastToOthers(socket: Socket, event: string, message: BaseMessage) {
@@ -74,10 +74,13 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on("typing", (msg) => {
+    socket.on("typing", (msg: BaseMessage) => {
+        let isTypingMessage: TypingMessage = {
+            id: socket.id,
+            sender: msg.sender
+        }
         // send to everyone but the original sender
-        msg.id = socket.id;
-        broadcastToOthers(socket, "typing", msg);
+        broadcastToOthers(socket, "typing", isTypingMessage);
     });
 
     socket.on("new user", (msg) => {

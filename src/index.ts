@@ -3,7 +3,13 @@ const app = express();
 import http from 'http';
 const server = http.createServer(app);
 import { Server, Socket } from "socket.io";
+import { instrument } from "@socket.io/admin-ui";
 const io = new Server(server);
+
+
+instrument(io, {
+    auth: false
+  });
 
 import { User } from './users/user';
 import { isValid } from './messages/validator';

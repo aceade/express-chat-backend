@@ -1,9 +1,9 @@
 export enum ChatEvent {
-    greeting,
-    chatMessage,
-    typing,
-    userList,
-    connection,
-    disconnection,
-    newUser
+    greeting = "greeting",
+    chatMessage = "chatMessage",
+    typing = "typing",
+    userList = "userList",
+    connection = "connection",
+    disconnection = "disconnection",
+    newUser = "newUser"
 }

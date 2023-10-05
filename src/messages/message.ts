@@ -1,8 +1,8 @@
 import { User } from "../users/user";
 
 export enum UserStatus {
-    disconnecting,
-    joining
+    disconnecting = "disconnecting",
+    joining = "joining"
 }
 
 export interface BaseMessage {

@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import express from 'express';
 const app = express();
 import http from 'http';
@@ -9,39 +10,30 @@ const io = new Server(server);
 
 instrument(io, {
     auth: false
-  });
+});
+
+const TOKEN = process.env.TOKEN;
+
+io.use((socket, next) => {
+    if (socket.handshake.auth.token === TOKEN) {
+        console.info("Valid token");
+        next();
+    } else {
+        const error = new Error("Invalid token");
+        next(error);
+    }
+})
 
 import { User } from './users/user';
 import { isValid } from './messages/validator';
 import { ChatMessage, Greeting, UserStatusMessage, UserStatus, BaseMessage, TypingMessage } from './messages/message';
 import { ChatEvent } from './messages/event';
+import { greetUser, broadcastToOthers, sendMessage } from './handlers/outbound';
 
 const port = 8080;
 
 let users: User[] = [];
 
-function greetUser(socket: Socket) {
-    let message: Greeting = {
-        sender: "Server",
-        message: "Hi!",
-        id: socket.id
-    }
-    sendMessage(socket, ChatEvent.greeting, message);
-}
-
-function sendMessage(socket: Socket, event: ChatEvent, message: BaseMessage) {
-    socket.emit(event.toString(), message);
-}
-
-/**
- * Send to everyone in the room except the original sender.
- * @param socket the Socket used
- * @param event defines the event ('typing', 'chat message, etc)
- * @param message the message to send
- */
-function broadcastToOthers(socket: Socket, event: ChatEvent, message: BaseMessage) {
-    socket.broadcast.emit(event.toString(), message);
-}
 
 /**
  * Send to everyone in the room. Could be expanded to specific chatrooms later.

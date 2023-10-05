@@ -4,6 +4,6 @@ export enum ChatEvent {
     typing = "typing",
     userList = "userList",
     connection = "connection",
-    disconnection = "disconnection",
+    disconnection = "disconnect",
     newUser = "newUser"
 }

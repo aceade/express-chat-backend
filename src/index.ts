@@ -3,9 +3,15 @@ import express from 'express';
 const app = express();
 import http from 'http';
 const server = http.createServer(app);
-import { Server, Socket } from "socket.io";
+import { Server} from "socket.io";
 import { instrument } from "@socket.io/admin-ui";
-const io = new Server(server);
+
+// allow from all origins as this is a test app
+const io = new Server(server, {
+    cors: {
+        origin: "*"
+    }
+});
 
 
 instrument(io, {
@@ -16,7 +22,6 @@ const TOKEN = process.env.TOKEN;
 
 io.use((socket, next) => {
     if (socket.handshake.auth.token === TOKEN) {
-        console.info("Valid token");
         next();
     } else {
         const error = new Error("Invalid token");
@@ -26,7 +31,7 @@ io.use((socket, next) => {
 
 import { User } from './users/user';
 import { isValid } from './messages/validator';
-import { ChatMessage, Greeting, UserStatusMessage, UserStatus, BaseMessage, TypingMessage } from './messages/message';
+import { ChatMessage, UserStatusMessage, UserStatus, BaseMessage, TypingMessage } from './messages/message';
 import { ChatEvent } from './messages/event';
 import { greetUser, broadcastToOthers, sendMessage } from './handlers/outbound';
 
@@ -47,18 +52,20 @@ function broadcastToEveryone(event: ChatEvent, message: BaseMessage) {
 io.on(ChatEvent.connection.toString(), (socket) => {
     console.log('a user connected');
     greetUser(socket);
-    socket.on(ChatEvent.disconnection.toString(), () => {
+    socket.on(ChatEvent.disconnection, () => {
+        
         let oldUser = users.filter(x => x.id === socket.id);
         users = users.filter(x => x.id !== socket.id);
+        console.log("A user disconnected. oldUser:", oldUser, "\nNew list:", users);
         let message: UserStatusMessage = {
             users: users,
             sender: oldUser[0].name,
             status: UserStatus.disconnecting
         };
-        broadcastToEveryone(ChatEvent.chatMessage, message);
+        broadcastToEveryone(ChatEvent.userList, message);
     });
 
-    socket.on(ChatEvent.chatMessage.toString(), (msg: ChatMessage) => {
+    socket.on(ChatEvent.chatMessage, (msg: ChatMessage) => {
         if (isValid(msg)) {
             // no need to send this back to ourselves
             broadcastToOthers(socket, ChatEvent.chatMessage, msg);
@@ -72,7 +79,7 @@ io.on(ChatEvent.connection.toString(), (socket) => {
         }
     });
 
-    socket.on(ChatEvent.typing.toString(), (msg: BaseMessage) => {
+    socket.on(ChatEvent.typing, (msg: TypingMessage) => {
         let isTypingMessage: TypingMessage = {
             id: socket.id,
             sender: msg.sender
@@ -81,7 +88,7 @@ io.on(ChatEvent.connection.toString(), (socket) => {
         broadcastToOthers(socket, ChatEvent.typing, isTypingMessage);
     });
 
-    socket.on(ChatEvent.newUser.toString(), (msg: BaseMessage) => {
+    socket.on(ChatEvent.newUser, (msg: UserStatusMessage) => {
         console.info("New user joined:", msg)
         users.push({
             name: msg.sender,

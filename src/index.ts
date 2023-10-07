@@ -18,15 +18,20 @@ instrument(io, {
     auth: false
 });
 
-const TOKEN = process.env.TOKEN;
-
 io.use((socket, next) => {
-    if (socket.handshake.auth.token === TOKEN) {
+    if (getTokenEntry(socket.handshake.auth.token)) {
         next();
     } else {
         const error = new Error("Invalid token");
         next(error);
     }
+});
+
+app.get("/token", (req, res) => {
+    const token = createToken();
+    res.json({
+        token: token
+    });
 })
 
 import { User } from './users/user';
@@ -34,6 +39,7 @@ import { isValid } from './messages/validator';
 import { ChatMessage, UserStatusMessage, UserStatus, BaseMessage, TypingMessage } from './messages/message';
 import { ChatEvent } from './messages/event';
 import { greetUser, broadcastToOthers, sendMessage } from './handlers/outbound';
+import { createToken, getTokenEntry } from './tokens/tokens';
 
 const port = 8080;
 

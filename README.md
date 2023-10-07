@@ -22,16 +22,14 @@ Depending on your package manager:
 
 ### pnpm
 
-- `echo "TOKEN=\"${token}\"" > .env `
 - `pnpm install`
 - `pnpm run dev`
 
 ### npm
 
-- `echo "TOKEN=\"${token}\"" > .env `
 - `npm install`
 - `npm run dev`
 
 ## Authentication
 
-The auth token is included in the environment variables **for testing only** and is shared across all clients. In practice, these should be unique to each client and stored elsewhere.
+Each client must make a GET request to `/token` prior to opening the socket.

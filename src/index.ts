@@ -28,8 +28,10 @@ io.use((socket, next) => {
 });
 
 app.get("/token", (req, res) => {
+    
     const token = createToken();
-    res.json({
+    console.info("Creating token:", token)
+    res.status(200).json({
         token: token
     });
 })

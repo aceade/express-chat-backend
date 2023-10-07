@@ -7,6 +7,10 @@ export const getTokenEntry = (token: string) => {
     return tokens.includes(token);
 }
 
+/**
+ * Build a token for a client.
+ * @returns token
+ */
 export const createToken = () => {
     const hash = createHash("sha256");
     let token = hash.update(randomUUID()).digest("base64");

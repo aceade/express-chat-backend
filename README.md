@@ -22,14 +22,16 @@ Depending on your package manager:
 
 ### pnpm
 
+- `echo "ALLOWED_ORIGINS=\"http://localhost:5173\"" > .env`
 - `pnpm install`
 - `pnpm run dev`
 
 ### npm
 
+- `echo "ALLOWED_ORIGINS=\"http://localhost:5173\"" > .env`
 - `npm install`
 - `npm run dev`
 
 ## Authentication
 
-Each client must make a GET request to `/token` prior to opening the socket.
+Each client must make a GET request to `/token` prior to opening the socket. The tokens are generated using Node's built-in crypto module.

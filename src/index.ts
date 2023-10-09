@@ -6,10 +6,11 @@ const server = http.createServer(app);
 import { Server} from "socket.io";
 import { instrument } from "@socket.io/admin-ui";
 
-// allow from all origins as this is a test app
+// origins in the env file
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS;
 const io = new Server(server, {
     cors: {
-        origin: "*"
+        origin: ALLOWED_ORIGINS,
     }
 });
 
@@ -28,9 +29,8 @@ io.use((socket, next) => {
 });
 
 app.get("/token", (req, res) => {
-    
+    res.header("Access-Control-Allow-Origin", ALLOWED_ORIGINS);
     const token = createToken();
-    console.info("Creating token:", token)
     res.status(200).json({
         token: token
     });
@@ -65,7 +65,7 @@ io.on(ChatEvent.connection.toString(), (socket) => {
         
         let oldUser = users.filter(x => x.id === socket.id);
         users = users.filter(x => x.id !== socket.id);
-        console.log("A user disconnected. oldUser:", oldUser, "\nNew list:", users);
+        console.log("A user disconnected. New list:", users);
         let message: UserStatusMessage = {
             users: users,
             sender: oldUser[0].name,

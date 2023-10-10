@@ -48,8 +48,10 @@ export const removeToken = (token: string) => {
    tokens = tokens.filter(x => x.token !== token);
 }
 
-// remove expired tokens
-setInterval(() => {
+export const removeExpiredTokens = () => {
     let date = Date.now();
-    tokens = tokens.filter(x => (date - x.created) >= MAX_TIME);
-}, 5000);
+    tokens = tokens.filter(x => {
+        (date - x.created) >= MAX_TIME
+    });
+    console.info(`There are not ${tokens.length} tokens`);
+}

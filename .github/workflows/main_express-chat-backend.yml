@@ -28,6 +28,7 @@ jobs:
       - name: npm install, build, and test
         run: |
           npm install
+          npm test
           npm run build
 
       - name: Upload artifact for deployment job

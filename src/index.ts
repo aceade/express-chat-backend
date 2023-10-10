@@ -41,11 +41,16 @@ import { isValid } from './messages/validator';
 import { ChatMessage, UserStatusMessage, UserStatus, BaseMessage, TypingMessage } from './messages/message';
 import { ChatEvent } from './messages/event';
 import { greetUser, broadcastToOthers, sendMessage } from './handlers/outbound';
-import { createToken, getTokenEntry, setSocket } from './tokens/tokens';
+import { createToken, getTokenEntry, removeExpiredTokens, setSocket } from './tokens/tokens';
 
 const port = 8080;
 
 let users: User[] = [];
+
+// remove expired tokens every five seconds
+setInterval(() => {
+    removeExpiredTokens();
+}, 5000);
 
 
 /**

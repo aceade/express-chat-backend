@@ -53,5 +53,5 @@ export const removeExpiredTokens = () => {
     tokens = tokens.filter(x => {
         (date - x.created) >= MAX_TIME
     });
-    console.info(`There are not ${tokens.length} tokens`);
+    console.info(`There are now ${tokens.length} tokens`);
 }
